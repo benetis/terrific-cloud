@@ -1,2 +1,14 @@
-*.class
-*.log
+target/
+out/
+.vscode/
+metals.sbt
+
+.ammonite
+.idea
+.metals
+.bloop
+.bsp
+
+.DS_Store
+
+README_Old.md
