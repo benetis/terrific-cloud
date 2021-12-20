@@ -1,5 +1,6 @@
 package prices.services
 
+import cats.data.OptionT.pure
 import cats.implicits._
 import cats.effect._
 import org.http4s._
@@ -19,19 +20,37 @@ object SmartcloudInstanceKindService {
       token: String
   )
 
-  def make[F[_]: Concurrent](config: Config, client: Client[F]): InstanceKindService[F] = new SmartcloudInstanceKindService(config, client)
+  def make[F[_]: Concurrent](
+      config: Config,
+      client: Client[F],
+      cacheRef: Ref[F, List[InstanceKind]]
+  ): InstanceKindService[F] =
+    new SmartcloudInstanceKindService(config, client, cacheRef)
 
   private final class SmartcloudInstanceKindService[F[_]: Concurrent](
       config: Config,
-      client: Client[F]
+      client: Client[F],
+      cacheRef: Ref[F, List[InstanceKind]]
   ) extends InstanceKindService[F]
       with Http4sClientDsl[F] {
 
-    implicit val instanceKindsEntityDecoder: EntityDecoder[F, List[String]] = jsonOf[F, List[String]]
+    implicit val instanceKindsEntityDecoder: EntityDecoder[F, List[String]] =
+      jsonOf[F, List[String]]
 
     val getAllUri = s"${config.baseUri}/instances"
 
     override def getAll(): F[List[InstanceKind]] =
+      cacheRef.get
+        .flatMap(cache =>
+          if (cache.isEmpty)
+            requestInstanceKinds().flatMap { kinds =>
+              cacheRef.update(_ => kinds).map(_ => kinds)
+            }
+          else
+            cacheRef.get
+        )
+
+    private def requestInstanceKinds(): F[List[InstanceKind]] =
       Uri
         .fromString(getAllUri)
         .liftTo[F]
@@ -42,9 +61,10 @@ object SmartcloudInstanceKindService {
             Accept(MediaType.application.json)
           )
 
-          client.fetchAs[List[String]](request)(instanceKindsEntityDecoder).map(_.map(InstanceKind))
+          client
+            .fetchAs[List[String]](request)(instanceKindsEntityDecoder)
+            .map(_.map(InstanceKind))
         }
-
   }
 
 }

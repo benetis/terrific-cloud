@@ -7,6 +7,7 @@ import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.middleware.Logger
 import prices.config.Config
+import prices.data.InstanceKind
 import prices.routes.InstanceKindRoutes
 import prices.services.SmartcloudInstanceKindService
 
@@ -14,23 +15,26 @@ object Server {
 
   def serve(config: Config): Stream[IO, ExitCode] = {
 
-    val instanceKindWithEmberClient = EmberClientBuilder
-      .default[IO]
-      .build
-      .map { client =>
-        SmartcloudInstanceKindService.make[IO](
-          SmartcloudInstanceKindService.Config(
-            config.smartcloud.baseUri,
-            config.smartcloud.token
-          ),
-          client
-        )
-      }
+    val serviceWithDependencies = for {
+      client <- EmberClientBuilder
+                  .default[IO]
+                  .build
+                  .use(IO.pure)
+      cache <- Ref[IO].of(List.empty[InstanceKind])
+    } yield SmartcloudInstanceKindService.make[IO](
+      SmartcloudInstanceKindService.Config(
+        config.smartcloud.baseUri,
+        config.smartcloud.token
+      ),
+      client,
+      cache
+    )
 
     Stream
       .eval(
-        instanceKindWithEmberClient.use { instanceKindService =>
-          val httpApp = InstanceKindRoutes[IO](instanceKindService).routes.orNotFound
+        serviceWithDependencies.flatMap { instanceKindService =>
+          val httpApp =
+            InstanceKindRoutes[IO](instanceKindService).routes.orNotFound
 
           EmberServerBuilder
             .default[IO]
