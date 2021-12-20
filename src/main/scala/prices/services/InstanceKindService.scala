@@ -14,6 +14,7 @@ object InstanceKindService {
   sealed trait Exception extends NoStackTrace
   object Exception {
     case class APICallFailure(message: String) extends Exception
+    case object TooManyRequests extends Exception
   }
 
 }

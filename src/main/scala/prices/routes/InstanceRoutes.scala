@@ -10,7 +10,7 @@ import protocol.InstanceWithPriceResponse._
 import prices.routes.protocol._
 import prices.services.InstanceKindService
 
-final case class InstanceKindRoutes[F[_]: Sync](
+final case class InstanceRoutes[F[_]: Sync](
     instanceKindService: InstanceKindService[F]
 ) extends Http4sDsl[F] {
 
@@ -25,6 +25,7 @@ final case class InstanceKindRoutes[F[_]: Sync](
       instanceKindService
         .getAll()
         .flatMap(kinds => Ok(kinds.map(k => InstanceKindResponse(k))))
+        .handleErrorWith(errorResponsesHandler)
   }
 
   private val getPrice: HttpRoutes[F] = HttpRoutes.of {
@@ -32,6 +33,7 @@ final case class InstanceKindRoutes[F[_]: Sync](
       instanceKindService
         .getPrice(kind)
         .flatMap(withPrice => Ok(InstanceWithPriceResponse(withPrice)))
+        .handleErrorWith(errorResponsesHandler)
   }
 
   def routes: HttpRoutes[F] =
@@ -39,5 +41,18 @@ final case class InstanceKindRoutes[F[_]: Sync](
       "/instance-kinds" -> getInstanceKinds,
       "/prices" -> getPrice
     )
+
+  private def errorResponsesHandler(t: Throwable) = t match {
+    case InstanceKindService.Exception.TooManyRequests =>
+      TooManyRequests("Too many requests. Quota is 1000 per 24 hours")
+
+    case InstanceKindService.Exception.APICallFailure(msg) =>
+      println(msg)
+      InternalServerError()
+
+    case t: Throwable =>
+      println(t.getMessage)
+      InternalServerError()
+  }
 
 }

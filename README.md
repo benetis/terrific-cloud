@@ -13,4 +13,4 @@
       make requests
 - Instance kinds can be cached, because they do not change
 - Scalafmt change to maxColumn = 80, because it doesn't fit on the laptop I am temporary working on
-- 
+- Simple retry policy for smartcloud requests
