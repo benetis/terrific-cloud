@@ -1,6 +1,5 @@
 package prices.services
 
-import cats.data.OptionT.pure
 import cats.implicits._
 import cats.effect._
 import org.http4s._
