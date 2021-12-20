@@ -11,7 +11,7 @@ import prices.routes.InstanceKindRoutes
 import prices.services.InstanceKindService
 import squants.market.{ JPY, Money }
 
-class MyHttpRoutesSuite extends munit.Http4sHttpRoutesSuite {
+class TestPrices extends munit.Http4sHttpRoutesSuite {
 
   implicit val instanceKindsEntityDecoder
       : EntityDecoder[IO, List[InstanceKind]] =
