@@ -6,6 +6,7 @@ import org.http4s.HttpRoutes
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
+import org.log4s.getLogger
 import protocol.InstanceWithPriceResponse._
 import prices.routes.protocol._
 import prices.services.InstanceKindService
@@ -13,6 +14,7 @@ import prices.services.InstanceKindService
 final case class InstanceRoutes[F[_]: Sync](
     instanceKindService: InstanceKindService[F]
 ) extends Http4sDsl[F] {
+  private[this] val logger = getLogger
 
   implicit val instanceKindResponseEncoder =
     jsonEncoderOf[F, List[InstanceKindResponse]]
@@ -47,11 +49,11 @@ final case class InstanceRoutes[F[_]: Sync](
       TooManyRequests("Too many requests. Quota is 1000 per 24 hours")
 
     case InstanceKindService.Exception.APICallFailure(msg) =>
-      println(msg)
+      logger.info(msg)
       InternalServerError()
 
     case t: Throwable =>
-      println(t.getMessage)
+      logger.info(t.getMessage)
       InternalServerError()
   }
 
