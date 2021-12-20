@@ -15,10 +15,10 @@ final case class InstanceWithPriceFromSmartcloud(
 }
 
 object InstanceWithPriceFromSmartcloud {
-  implicit val decodeFoo: Decoder[InstanceWithPriceFromSmartcloud] =
+  implicit val decoder: Decoder[InstanceWithPriceFromSmartcloud] =
     (c: HCursor) =>
       for {
-        kind <- c.downField("kind").as[String].map(InstanceKind)
+        kind <- c.as[InstanceKind]
         price <- c.downField("price").as[BigDecimal]
       } yield new InstanceWithPriceFromSmartcloud(kind, price)
 }

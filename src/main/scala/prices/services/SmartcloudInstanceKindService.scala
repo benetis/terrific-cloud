@@ -34,8 +34,9 @@ object SmartcloudInstanceKindService {
   ) extends InstanceKindService[F]
       with Http4sClientDsl[F] {
 
-    implicit val instanceKindsEntityDecoder: EntityDecoder[F, List[String]] =
-      jsonOf[F, List[String]]
+    implicit val instanceKindsEntityDecoder
+        : EntityDecoder[F, List[InstanceKind]] =
+      jsonOf[F, List[InstanceKind]]
 
     implicit val instancePrice
         : EntityDecoder[F, InstanceWithPriceFromSmartcloud] =
@@ -72,10 +73,9 @@ object SmartcloudInstanceKindService {
         .liftTo[F]
         .flatMap { uri =>
           client
-            .fetchAs[List[String]](buildRequest(uri))(
+            .fetchAs[List[InstanceKind]](buildRequest(uri))(
               instanceKindsEntityDecoder
             )
-            .map(_.map(InstanceKind))
         }
 
     private def buildRequest(uri: Uri): Request[F] = GET(

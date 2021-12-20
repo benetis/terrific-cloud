@@ -12,7 +12,8 @@ object Dependencies {
     val squants    = "1.6.0"
 
     // Test
-    val munit = "0.7.29"
+    val munit       = "0.7.29"
+    val http4sMunit = "0.9.2"
 
     // Compiler
     val betterMonadicFor = "0.3.1"
@@ -33,6 +34,8 @@ object Dependencies {
   object T { // Test dependencies
     // Scala
     val munit = "org.scalameta" %% "munit" % V.munit % Test
+    val http4sMunit =
+      "com.alejandrohdezma" %% "http4s-munit" % V.http4sMunit % Test
   }
 
   object C { // Compiler plugins
