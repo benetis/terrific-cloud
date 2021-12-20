@@ -3,6 +3,7 @@
 - Random prices on each request is to what the solution should be optimized. Meaning that I will not assume "its just a
   dummy data", but its how 3rd party client works. This assumption has impact on caching choice
 - Instance kinds do not change
+- Currency for price is JPY
 
 ## Design decisions
 

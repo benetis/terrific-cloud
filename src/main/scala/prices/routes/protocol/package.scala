@@ -13,4 +13,7 @@ package object protocol {
   object InstanceKindQueryParam
       extends QueryParamDecoderMatcher[InstanceKind]("instanceKind")
 
+  object InstanceKindAPIQueryParamMatcher
+      extends QueryParamDecoderMatcher[InstanceKind]("kind")
+
 }

@@ -8,6 +8,7 @@ import org.http4s.client.Client
 import org.http4s.headers._
 import org.http4s.MediaType
 import org.http4s.client.dsl.Http4sClientDsl
+import prices.data.InstanceWithPriceFromSmartcloud._
 import org.http4s.dsl.io.GET
 import org.http4s.headers.Authorization
 import prices.data._
@@ -36,7 +37,11 @@ object SmartcloudInstanceKindService {
     implicit val instanceKindsEntityDecoder: EntityDecoder[F, List[String]] =
       jsonOf[F, List[String]]
 
-    val getAllUri = s"${config.baseUri}/instances"
+    implicit val instancePrice
+        : EntityDecoder[F, InstanceWithPriceFromSmartcloud] =
+      jsonOf[F, InstanceWithPriceFromSmartcloud]
+
+    implicit val getUri = s"${config.baseUri}/instances"
 
     override def getAll(): F[List[InstanceKind]] =
       cacheRef.get
@@ -49,21 +54,35 @@ object SmartcloudInstanceKindService {
             cacheRef.get
         )
 
-    private def requestInstanceKinds(): F[List[InstanceKind]] =
+    override def getPrice(kind: InstanceKind): F[InstanceWithPrice] =
       Uri
-        .fromString(getAllUri)
+        .fromString(s"$getUri/${kind.getString}")
         .liftTo[F]
         .flatMap { uri =>
-          val request: Request[F] = GET(
-            uri,
-            Authorization(Credentials.Token(AuthScheme.Bearer, config.token)),
-            Accept(MediaType.application.json)
-          )
-
           client
-            .fetchAs[List[String]](request)(instanceKindsEntityDecoder)
+            .fetchAs[InstanceWithPriceFromSmartcloud](buildRequest(uri))(
+              instancePrice
+            )
+            .map(_.toInstanceWithPrice)
+        }
+
+    private def requestInstanceKinds(): F[List[InstanceKind]] =
+      Uri
+        .fromString(getUri)
+        .liftTo[F]
+        .flatMap { uri =>
+          client
+            .fetchAs[List[String]](buildRequest(uri))(
+              instanceKindsEntityDecoder
+            )
             .map(_.map(InstanceKind))
         }
+
+    private def buildRequest(uri: Uri): Request[F] = GET(
+      uri,
+      Authorization(Credentials.Token(AuthScheme.Bearer, config.token)),
+      Accept(MediaType.application.json)
+    )
   }
 
 }

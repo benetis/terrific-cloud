@@ -6,6 +6,7 @@ import prices.data._
 
 trait InstanceKindService[F[_]] {
   def getAll(): F[List[InstanceKind]]
+  def getPrice(kind: InstanceKind): F[InstanceWithPrice]
 }
 
 object InstanceKindService {
