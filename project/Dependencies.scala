@@ -20,7 +20,8 @@ object Dependencies {
 
   object L { // Libraries
     // Scala
-    def http4s(module: String): ModuleID = "org.http4s" %% s"http4s-$module" % V.http4s
+    def http4s(module: String): ModuleID =
+      "org.http4s" %% s"http4s-$module" % V.http4s
 
     val circe      = "io.circe"              %% "circe-generic"   % V.circe
     val logback    = "ch.qos.logback"         % "logback-classic" % V.logback
@@ -33,8 +34,12 @@ object Dependencies {
   }
 
   object C { // Compiler plugins
-    val betterMonadicFor = compilerPlugin("com.olegpy" %% "better-monadic-for" % V.betterMonadicFor)
-    val kindProjector    = compilerPlugin("org.typelevel" %% "kind-projector" % V.kindProjector cross CrossVersion.full)
+    val betterMonadicFor = compilerPlugin(
+      "com.olegpy" %% "better-monadic-for" % V.betterMonadicFor
+    )
+    val kindProjector = compilerPlugin(
+      "org.typelevel" %% "kind-projector" % V.kindProjector cross CrossVersion.full
+    )
   }
 
 }
