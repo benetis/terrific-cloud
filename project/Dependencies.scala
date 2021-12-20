@@ -9,6 +9,7 @@ object Dependencies {
     val circe      = "0.15.0-M1"
     val logback    = "1.2.6"
     val pureConfig = "0.16.0"
+    val squants    = "1.6.0"
 
     // Test
     val munit = "0.7.29"
@@ -26,6 +27,7 @@ object Dependencies {
     val circe      = "io.circe"              %% "circe-generic"   % V.circe
     val logback    = "ch.qos.logback"         % "logback-classic" % V.logback
     val pureConfig = "com.github.pureconfig" %% "pureconfig"      % V.pureConfig
+    val squants    = "org.typelevel"         %% "squants"         % V.squants
   }
 
   object T { // Test dependencies
